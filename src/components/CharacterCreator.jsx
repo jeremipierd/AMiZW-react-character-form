@@ -28,51 +28,95 @@ function CharacterCreator() {
     const [savedCharacter, setSavedCharacter] = useState(null);
 
     const handleChange = (e) => {
-        // TODO:
-        // 1. pobierz name, value, type, checked z e.target
-        // 2. jeśli pole zaczyna się od "stats." to zaktualizuj formData.stats
-        // 3. w innym przypadku zaktualizuj zwykłe pole formularza
+        const { name, value, type, checked } = e.target;
+        const fieldValue = type === "checkbox" ? checked : value;
+    
+        if (name.startsWith("stats.")) {
+            const statName = name.split(".")[1];
+    
+            setFormData((prev) => ({
+                ...prev,
+                stats: {
+                    ...prev.stats,
+                    [statName]: Number(fieldValue),
+                },
+            }));
+        } else {
+            setFormData((prev) => ({
+                ...prev,
+                [name]:
+                    name === "level"
+                        ? Number(fieldValue)
+                        : type === "checkbox"
+                        ? checked
+                        : fieldValue,
+            }));
+        }
     };
-
+    
     const validate = () => {
         const newErrors = {};
-
-        // TODO:
-        // - nick min. 3 znaki
-        // - rasa wymagana
-        // - klasa wymagana
-        // - poziom 1-60
-        // - broń wymagana
-        // - opis min. 10 znaków
-        // - suma statystyk max 15
-
+    
+        if (formData.name.length < 3) {
+            newErrors.name = "Nick min. 3 znaki";
+        }
+    
+        if (!formData.race) {
+            newErrors.race = "Rasa wymagana";
+        }
+    
+        if (!formData.classType) {
+            newErrors.classType = "Klasa wymagana";
+        }
+    
+        if (formData.level < 1 || formData.level > 60) {
+            newErrors.level = "Poziom 1-60";
+        }
+    
+        if (!formData.weapon) {
+            newErrors.weapon = "Broń wymagana";
+        }
+    
+        if (formData.description.length < 10) {
+            newErrors.description = "Opis min. 10 znaków";
+        }
+    
+        const statsSum =
+            formData.stats.strength +
+            formData.stats.agility +
+            formData.stats.intelligence;
+    
+        if (statsSum > 15) {
+            newErrors.stats = "Suma statystyk max 15";
+        }
+    
         return newErrors;
     };
-
+    
     const handleSave = (e) => {
         e.preventDefault();
-
-        // TODO:
-        // 1. uruchom validate()
-        // 2. zapisz błędy do setErrors(...)
-        // 3. jeśli brak błędów, zapisz postać do savedCharacter
+    
+        const validationErrors = validate();
+        setErrors(validationErrors);
+    
+        if (Object.keys(validationErrors).length === 0) {
+            setSavedCharacter(cloneData(formData));
+        }
     };
-
+    
     const handleLoadSaved = () => {
-        // TODO:
-        // jeśli istnieje savedCharacter,
-        // wczytaj go z powrotem do formData
+        if (savedCharacter) {
+            setFormData(cloneData(savedCharacter));
+        }
     };
-
+    
     const handleDeleteSaved = () => {
-        // TODO:
-        // usuń zapis postaci
+        setSavedCharacter(null);
     };
-
+    
     const handleResetForm = () => {
-        // TODO:
-        // zresetuj formularz do initialForm
-        // wyczyść błędy
+        setFormData(initialForm);
+        setErrors({});
     };
 
     return (
